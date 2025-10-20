@@ -20,9 +20,19 @@ public:
 	// 更新
 	void Update();
 
-	bool PusyKey(BYTE keyNumber);
+	bool PushKey(BYTE keyNumber);
+
+	// トリガー判定
+	bool TriggerKey(BYTE keyNumber);
 
 private:
+
+	// DirectInputのインスタンス
+	Microsoft::WRL::ComPtr<IDirectInput8> directInput = nullptr;
+
 	// キーボードデバイスの生成
 	Microsoft::WRL::ComPtr<IDirectInputDevice8> keyboard = nullptr;
+
+	BYTE key[256] = {};
+	BYTE preKey[256] = {};
 };
