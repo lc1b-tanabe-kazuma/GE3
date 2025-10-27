@@ -48,20 +48,14 @@ void Input::Update()
 }
 
 bool Input::PushKey(BYTE keyNumber) {
-
-	// キーボードの情報取得
-	keyboard.Get()->Acquire();
-	// 全キーの入力状態を取得する
-	keyboard.Get()->GetDeviceState(sizeof(key), key);
-	return key[keyNumber] & 0x80;
+	if (key[keyNumber] & 0x80) {
+		return true;
+	}
+	return false;
 }
 
 bool Input::TriggerKey(BYTE keyNumber) {
 	bool ret = false;
-	// キーボードの情報取得
-	keyboard.Get()->Acquire();
-	// 全キーの入力状態を取得する
-	keyboard.Get()->GetDeviceState(sizeof(key), key);
 	// 押された瞬間を検出
 	if ((key[keyNumber] & 0x80) && !(preKey[keyNumber])) {
 		ret = true;
