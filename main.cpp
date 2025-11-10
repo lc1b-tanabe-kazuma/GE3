@@ -1009,7 +1009,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Input* input = nullptr;
 
 	input = new Input();
-	input->Initialize(winApp->GetHinstance(), winApp->GetHwnd());
+	input->Initialize(winApp);
 
 	// コマンドキューを生成する
 	Microsoft::WRL::ComPtr <ID3D12CommandQueue> commandQueue = nullptr;
@@ -1830,9 +1830,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 音声データの解放
 	SoundUnload(&soundData1);
 
-	// 最終リリース
-	CoUninitialize();
-	CloseWindow(winApp->GetHwnd());
+	// WindowsAPIの終了処理
+	winApp->Finalize();
 
 	delete input;
 	delete winApp;
