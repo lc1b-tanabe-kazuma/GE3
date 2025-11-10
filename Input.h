@@ -6,13 +6,14 @@
 #include <wrl.h>
 #include <cassert>      
 
+#include "WinApp.h"
+
 // 入力
-class Input
-{
+class Input {
 public:
 
 	// 初期化
-	void Initialize(HINSTANCE hInstance, HWND hwnd);
+	void Initialize(WinApp* winApp);
 
 	// 更新
 	void Update();
@@ -32,4 +33,7 @@ private:
 
 	BYTE key[256] = {};
 	BYTE preKey[256] = {};
+
+	// WinAPI
+	WinApp* winApp = nullptr;
 };
