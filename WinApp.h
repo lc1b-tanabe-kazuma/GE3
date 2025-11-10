@@ -23,6 +23,9 @@ public: // メンバ関数
 	// ウィンドウクラスの取得
 	HINSTANCE GetHinstance() const { return wc.hInstance; }
 
+	// メッセージの処理
+	bool ProcessMessage();
+
 private:
 	// ウィンドウハンドル
 	HWND hwnd = nullptr;

@@ -71,3 +71,20 @@ void WinApp::Finalize() {
 	CloseWindow(hwnd);
 	CoUninitialize();
 }
+
+bool WinApp::ProcessMessage() {
+	MSG msg{};
+	// メッセージが来ているかをチェックする
+	if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+
+		// メッセージを翻訳して送る
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+
+	// メッセージがWM_QUITかどうかをチェックする
+	if (msg.message == WM_QUIT) {
+		return true;
+	}
+	return false;
+}
