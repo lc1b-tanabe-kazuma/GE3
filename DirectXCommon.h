@@ -42,6 +42,9 @@ public:
 
 	Microsoft::WRL::ComPtr <ID3D12Resource> UploadTextureData(const Microsoft::WRL::ComPtr <ID3D12Resource>& texture, const DirectX::ScratchImage& mipImage);
 
+	// LoadTexture関数
+	DirectX::ScratchImage LoadTexture(const std::string& filePath);
+
 private:
 
 	// デバイス初期化

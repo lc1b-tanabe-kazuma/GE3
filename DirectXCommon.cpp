@@ -195,6 +195,23 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::UploadTextureData(const Mi
 	return intermediateResource;
 }
 
+DirectX::ScratchImage DirectXCommon::LoadTexture(const std::string& filePath){
+	
+	// テクスチャファイルを読んでプログラムで扱えるようにする
+	DirectX::ScratchImage image{};
+	std::wstring wFilePath = ConvertString(filePath);
+	HRESULT hr = DirectX::LoadFromWICFile(wFilePath.c_str(), DirectX::WIC_FLAGS_NONE, nullptr, image);
+	assert(SUCCEEDED(hr));
+
+	// ミップマップを生成する
+	DirectX::ScratchImage mipImage{};
+	hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0, mipImage);
+	assert(SUCCEEDED(hr));
+
+	// ミップマップを返す
+	return mipImage;
+}
+
 void DirectXCommon::DeviceInitialize() {
 
 	assert(SUCCEEDED(hr));
