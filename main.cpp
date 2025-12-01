@@ -15,10 +15,6 @@
 #include <strsafe.h>
 #include <dxgidebug.h>
 #include <dxcapi.h>
-#include "externals/imgui/imgui.h"
-#include "externals/imgui/imgui_impl_dx12.h"
-#include "externals/imgui/imgui_impl_win32.h"
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 #include "externals/DirectXTex/DirectXTex.h"
 #include "externals/DirectXTex/d3dx12.h"
 #include <vector>
@@ -26,6 +22,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg
 #include <xaudio2.h>
 #include "Input.h"
 #include "WinApp.h"
+#include "DirectXCommon.h"
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -88,6 +85,7 @@ void Log(std::ostream& os, const std::string& message) {
 	OutputDebugStringA(message.c_str());
 }
 
+/*
 Microsoft::WRL::ComPtr <IDxcBlob> CompileShader(
 
 	// complierするShaderファイルへのパス
@@ -159,7 +157,7 @@ Microsoft::WRL::ComPtr <IDxcBlob> CompileShader(
 
 	// shaderBlobを返す
 	return shaderBlob;
-}
+}*/
 
 // Vector4の構造体
 struct Vector4 {
@@ -895,6 +893,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	winApp = new WinApp();
 	winApp->Initialize();
 
+	// DirectX12初期化処理
+	DirectXCommon* dxCommon = nullptr;
+	dxCommon = new DirectXCommon();
+	dxCommon->Initialize();
+
 #ifdef _DEBUG
 	Microsoft::WRL::ComPtr<ID3D12Debug1> debugController = nullptr;
 	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
@@ -1080,19 +1083,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 
 	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	assert(fenceEvent != nullptr);
-
-	// dxcCompilerを初期化
-	Microsoft::WRL::ComPtr <IDxcUtils> dxcUtils = nullptr;
-	Microsoft::WRL::ComPtr <IDxcCompiler3> dxCompiler = nullptr;
-	hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
-	assert(SUCCEEDED(hr));
-	hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxCompiler));
-	assert(SUCCEEDED(hr));
-
-	// includeHandlerを初期化
-	Microsoft::WRL::ComPtr <IDxcIncludeHandler> includehandler = nullptr;
-	hr = dxcUtils->CreateDefaultIncludeHandler(&includehandler);
-	assert(SUCCEEDED(hr));
 
 	// RootSignatureを作成する
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
@@ -1381,26 +1371,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	directionalLightResource->Unmap(0, nullptr);
 
-	// ビューポート
-	D3D12_VIEWPORT viewport{};
-
-	// ビューポートのサイズ
-	viewport.Width = static_cast<float>(WinApp::kClientWidth);
-	viewport.Height = static_cast<float>(WinApp::kClientHeight);
-	viewport.TopLeftX = 0.0f;
-	viewport.TopLeftY = 0.0f;
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
-
-	// シザー矩形
-	D3D12_RECT scissorRect{};
-
-	// シザー矩形のサイズ
-	scissorRect.left = 0;
-	scissorRect.right = WinApp::kClientWidth;
-	scissorRect.top = 0;
-	scissorRect.bottom = WinApp::kClientHeight;
-
 	// WVP用のリソースを作成する
 	Microsoft::WRL::ComPtr <ID3D12Resource> wvpResource = CreateBufferResource(device.Get(), sizeof(TransfomationMatrix));
 
@@ -1504,13 +1474,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
 		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
+	/*
 	// DescriptorSizeを取得しておく
 	const uint32_t descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	const uint32_t descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	const uint32_t descriptorSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
 	GetCPUDescriptorHandle(rtvDescriptorHeap.Get(), descriptorSizeRTV, 0);
-
+*/
 	// Textureの読んで転送する
 	DirectX::ScratchImage mipImage = LoadTexture("resources/uvChecker.png");
 	const DirectX::TexMetadata& metadata = mipImage.GetMetadata();
@@ -1765,6 +1736,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// 実際のcommandListのImGuiの描画を行う
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
 
+
+		// 描画前処理
+		dxCommon->PreDraw();
+
+		
 		// 今回はRenderTargetからpresentにする
 		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
@@ -1781,6 +1757,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// GPUとOSに画面の交換を行なうように通知する
 		swapChain->Present(1, 0);
+
+		// 描画後処理
+		dxCommon->PostDraw();
 
 		// fenceの値を更新
 		fencevalue++;
@@ -1817,6 +1796,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	delete input;
 	delete winApp;
+	delete dxCommon;
 
 	return 0;
 }
