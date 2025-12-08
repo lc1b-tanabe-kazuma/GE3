@@ -862,7 +862,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// リリースチェック
 	D3DResourceLeakChecker resourceLeakChecker;
+#ifdef _DEBUG
+	Microsoft::WRL::ComPtr<ID3D12Debug1> debugController = nullptr;
+	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
+		//
+		debugController->EnableDebugLayer();
+		debugController->SetEnableGPUBasedValidation(TRUE);
+	}
+#endif // _DEBUG
 
+	/*
 	// COMの初期化
 	CoInitializeEx(0, COINIT_MULTITHREADED);
 
@@ -890,7 +899,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//
 	std::ofstream logStream(logFilePath);
-
+*/
 	// ウィンドウクラスの設定
 	WinApp* winApp = nullptr;
 	winApp = new WinApp();
@@ -907,14 +916,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	input = new Input();
 	input->Initialize(winApp);
 
-#ifdef _DEBUG
-	Microsoft::WRL::ComPtr<ID3D12Debug1> debugController = nullptr;
-	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
-		//
-		debugController->EnableDebugLayer();
-		debugController->SetEnableGPUBasedValidation(TRUE);
-	}
-#endif // _DEBUG
+
 
 	/*
 	// DXGIファクトリーの作成
@@ -1570,7 +1572,7 @@ device->CreateDepthStencilView(depthStencilResource.Get(), &dsvDesc, dsvdescript
 bool useMonsterBall = false;
 
 transform.rotate.y = 3.0f;
-*/
+
 
 // XAudio2の初期化
 	Microsoft::WRL::ComPtr<IXAudio2> xAudio2;
@@ -1584,7 +1586,7 @@ transform.rotate.y = 3.0f;
 
 	// 音声再生
 	SoundPlayWave(xAudio2.Get(), soundData1);
-
+*/
 	// ウィンクラのxボタンが押されるまでループ
 	while (true) {
 
@@ -1603,9 +1605,7 @@ transform.rotate.y = 3.0f;
 
 		input->Update();
 
-		dxCommon->PreDraw();
 
-		dxCommon->PostDraw();
 
 		/*
 		//===========================
@@ -1723,6 +1723,11 @@ transform.rotate.y = 3.0f;
 
 		// シザー矩形を設定する
 		commandList->RSSetScissorRects(1, &scissorRect);
+		*/
+
+		dxCommon->PreDraw();
+
+		/* シーン処理
 
 		// RootSignatureを設定する
 		commandList->SetGraphicsRootSignature(rootSignature.Get());
@@ -1807,8 +1812,11 @@ transform.rotate.y = 3.0f;
 		hr = commandList->Reset(commandAllocator.Get(), nullptr);
 		assert(SUCCEEDED(hr));
 		*/
+
+		dxCommon->PostDraw();
 	}
 
+	/*
 	// 解放処理
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
@@ -1819,7 +1827,7 @@ transform.rotate.y = 3.0f;
 
 	// 音声データの解放
 	SoundUnload(&soundData1);
-
+*/
 	// WindowsAPIの終了処理
 	winApp->Finalize();
 
