@@ -11,7 +11,7 @@
 using namespace Logeer;
 using namespace StringUtility;
 
-void DirectXCommon::Initialize() {
+void DirectXCommon::Initialize(WinApp* winApp) {
 	// Null
 	assert(winApp);
 
@@ -67,7 +67,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> DirectXCommon::CompileShader(
 	const std::wstring& filePath,
 	const wchar_t* profile) {
 
-	Log(logStream, ConvertString(std::format(L"Begin CompileShader,path:{},profile:{}\n", filePath, profile)));
+	//Log(logStream, ConvertString(std::format(L"Begin CompileShader,path:{},profile:{}\n", filePath, profile)));
 
 	// hlslファイルを読む
 	Microsoft::WRL::ComPtr <IDxcBlobEncoding> shaderSource = nullptr;
@@ -108,7 +108,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> DirectXCommon::CompileShader(
 	if (shaderError != nullptr && shaderError->GetStringLength() != 0) {
 
 		// エラーがあったら出力する
-		Log(logStream, shaderError->GetStringPointer());
+		//Log(logStream, shaderError->GetStringPointer());
 		assert(false);
 	}
 
@@ -118,7 +118,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> DirectXCommon::CompileShader(
 	assert(SUCCEEDED(hr));
 
 	// 成功したらログを出す
-	Log(logStream, ConvertString(std::format(L"Compile Success,path:{},profile:{}\n", filePath, profile)));
+//	Log(logStream, ConvertString(std::format(L"Compile Success,path:{},profile:{}\n", filePath, profile)));
 
 	// shaderBlobを返す
 	return shaderBlob;
@@ -176,11 +176,11 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextuerResource(cons
 	return resource;
 }
 
-Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::UploadTextureData(const Microsoft::WRL::ComPtr<ID3D12Resource>& texture, const DirectX::ScratchImage& mipImage){
+Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::UploadTextureData(const Microsoft::WRL::ComPtr<ID3D12Resource>& texture, const DirectX::ScratchImage& mipImage) {
 	std::vector<D3D12_SUBRESOURCE_DATA> subresources;
 	DirectX::PrepareUpload(device.Get(), mipImage.GetImages(), mipImage.GetImageCount(), mipImage.GetMetadata(), subresources);
 	uint64_t intermediateSize = GetRequiredIntermediateSize(texture.Get(), 0, UINT(subresources.size()));
-    Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource = CreateBufferResource(intermediateSize);
+	Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource = CreateBufferResource(intermediateSize);
 	UpdateSubresources(commandList.Get(), texture.Get(), intermediateResource.Get(), 0, 0, UINT(subresources.size()), subresources.data());
 
 	// Textureへの転送後は利用できるよう、
@@ -195,8 +195,8 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::UploadTextureData(const Mi
 	return intermediateResource;
 }
 
-DirectX::ScratchImage DirectXCommon::LoadTexture(const std::string& filePath){
-	
+DirectX::ScratchImage DirectXCommon::LoadTexture(const std::string& filePath) {
+
 	// テクスチャファイルを読んでプログラムで扱えるようにする
 	DirectX::ScratchImage image{};
 	std::wstring wFilePath = ConvertString(filePath);
@@ -228,15 +228,13 @@ void DirectXCommon::DeviceInitialize() {
 		//
 		if (!(adapterDesc.Flags & DXGI_ADAPTER_FLAG3_SOFTWARE)) {
 
-			Log(logStream, ConvertString(std::format(L"USE Adaptere:{}\n", adapterDesc.Description)));
+			//Log(logStream, ConvertString(std::format(L"USE Adaptere:{}\n", adapterDesc.Description)));
 			break;
 		}
 		useAdapter = nullptr;
 	}
 
 	assert(useAdapter != nullptr);
-
-	Microsoft::WRL::ComPtr< ID3D12Device> device = nullptr;
 
 	D3D_FEATURE_LEVEL featureLevels[] = {
 		D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
@@ -247,19 +245,19 @@ void DirectXCommon::DeviceInitialize() {
 		hr = D3D12CreateDevice(useAdapter.Get(), featureLevels[i], IID_PPV_ARGS(&device));
 
 		if (SUCCEEDED(hr)) {
-			Log(logStream, std::format("feturelevel : {}\n", featureLevelString[i]));
+			//	Log(logStream, std::format("feturelevel : {}\n", featureLevelString[i]));
 			break;
 		}
 	}
 
 	assert(device != nullptr);
-	Log(logStream, "Compleate create D3D12Device!!\n");
+	Log("Compleate create D3D12Device!!\n");
 
 	// logのデバッグを出力
-	Log(logStream, "Hello,DirectX!\n");
+	Log("Hello, DirectX!\n");
 
 	// logに画面の幅の数値を出力
-	Log(logStream, ConvertString(std::format(L"width : {}, {}\n", WinApp::kClientWidth, WinApp::kClientHeight)));
+	//Log(logStream, ConvertString(std::format(L"width : {}, {}\n", WinApp::kClientWidth, WinApp::kClientHeight)));
 
 #ifdef _DEBUG
 	Microsoft::WRL::ComPtr<ID3D12InfoQueue> infoQueue = nullptr;

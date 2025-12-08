@@ -1,7 +1,11 @@
 #include "Logger.h"
-#include <debugapi.h>
+#include <iostream>
+#include <Windows.h>
 
-void Logeer::Log(std::ostream& os, const std::string& message) {
-	os << message << std::endl;
-	OutputDebugStringA(message.c_str());
+namespace Logeer {
+    void Log(const std::string& message) {
+        // デバッグ出力
+        OutputDebugStringA(message.c_str());
+        OutputDebugStringA("\n");
+    }
 }

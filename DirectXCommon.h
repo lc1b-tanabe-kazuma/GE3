@@ -6,6 +6,7 @@
 #include <wrl.h>
 #include <array>
 #include <dxcapi.h>
+#include <string>
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
@@ -15,7 +16,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg
 
 class DirectXCommon {
 public:
-	void Initialize();
+	void Initialize(WinApp* winApp);
 
 	// SRVの指定番号のCPUデスクリプタハンドルを取得
 	D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index);
