@@ -41,10 +41,16 @@ public:
 	Microsoft::WRL::ComPtr<ID3D12Resource>CreateTextuerResource(
 		const DirectX::TexMetadata& metadata);
 
+	// テクスチャーファイルの読み込み
 	Microsoft::WRL::ComPtr <ID3D12Resource> UploadTextureData(const Microsoft::WRL::ComPtr <ID3D12Resource>& texture, const DirectX::ScratchImage& mipImage);
 
 	// LoadTexture関数
-	DirectX::ScratchImage LoadTexture(const std::string& filePath);
+	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
+
+	// シェーダーのコンパイル
+	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(
+		const std::wstring& filePath,
+		const wchar_t* profile);
 
 private:
 
@@ -83,11 +89,6 @@ private:
 
 	// ImGuiの初期化
 	void ImGuiInitialize();
-
-	// シェーダーのコンパイル
-	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(
-		const std::wstring& filePath,
-		const wchar_t* profile);
 
 	// DescriptorHeapを作成する関数
 	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisble);
@@ -213,4 +214,6 @@ private:
 
 	// 実際に頂点にリソースを作る
 	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResource = nullptr;
+
+	DirectX::ScratchImage image{};
 };

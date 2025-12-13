@@ -147,7 +147,6 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(size_
 	return vertexResource;
 }
 
-// 修正内容: "metdata" を "metadata" に修正
 Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextuerResource(const DirectX::TexMetadata& metadata) {
 	// metadataを基にResourceの設定
 	D3D12_RESOURCE_DESC resourceDesc{};
