@@ -3,6 +3,7 @@
 #include "Logger.h"
 #include <cassert>
 #include "externals/DirectXTex/d3dx12.h"
+#include <thread>
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -12,6 +13,10 @@ using namespace Logeer;
 using namespace StringUtility;
 
 void DirectXCommon::Initialize(WinApp* winApp) {
+
+	// FPS固定初期化
+	InitializeFixFps();
+
 	// Null
 	assert(winApp);
 
@@ -374,6 +379,38 @@ D3D12_GPU_DESCRIPTOR_HANDLE DirectXCommon::GetGPUDescriptorHandle(const Microsof
 	return handleGPU;
 }
 
+void DirectXCommon::InitializeFixFps() {
+	reference_ = std::chrono::steady_clock::now();
+}
+
+void DirectXCommon::UpdateFixFps() {
+	// 1/60秒の時間
+	const std::chrono::microseconds KMinTime(uint64_t(1000000.0f / 60.0f));
+
+	// 1/60秒より短い時間
+	const std::chrono::microseconds KMinCheckTime(uint64_t(1000000.0f / 65.0f));
+
+	// 現在の時間を取得
+	std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+	// 経過時間を取得
+	std::chrono::microseconds elapsed =
+		std::chrono::duration_cast<std::chrono::microseconds>(now - reference_);
+
+	// 1/60秒立ってないとき
+	if (elapsed < KMinCheckTime) {
+
+		// 1/60経過するまでスリープを繰り返す
+		while (std::chrono::steady_clock::now() - reference_ < KMinTime) {
+
+			// 少しだけスリープ
+			std::this_thread::sleep_for(std::chrono::microseconds(1));
+		}
+	}
+
+	// 現在の時間を記録
+	reference_ = std::chrono::steady_clock::now();
+}
+
 void DirectXCommon::DescriptorHeapsInitialize() {
 
 	// DescriptorSizeを取得しておく
@@ -564,6 +601,9 @@ void DirectXCommon::PostDraw() {
 
 		WaitForSingleObject(fenceEvent, INFINITE);
 	}
+
+	// FPS固定更新
+	UpdateFixFps();
 
 	// 次のフレーム用のコマンドリストを準備
 	hr = commandAllocator->Reset(); // アロケーターのリセット

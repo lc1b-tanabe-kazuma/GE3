@@ -123,6 +123,7 @@ struct SoundData {
 	unsigned int bufferSize;
 };
 
+#pragma region 行列関連関数
 // 行列の積
 Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
 	Matrix4x4 result = {};
@@ -344,18 +345,7 @@ Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float botto
 	result.m[3][3] = 1.0f;
 	return result;
 }
-
-// DescriptorHeapを作成する関数
-Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> CreateDescriptorHeap(const Microsoft::WRL::ComPtr <ID3D12Device>& device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisble) {
-	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> descriptorHeap = nullptr;
-	D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc{};
-	descriptorHeapDesc.Type = heapType;
-	descriptorHeapDesc.NumDescriptors = numDescriptors;
-	descriptorHeapDesc.Flags = shaderVisble ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-	HRESULT hr = device->CreateDescriptorHeap(&descriptorHeapDesc, IID_PPV_ARGS(&descriptorHeap));
-	assert(SUCCEEDED(hr));
-	return descriptorHeap;
-}
+#pragma endregion
 
 // DepthStencilTexTure
 Microsoft::WRL::ComPtr <ID3D12Resource> CreateDepthStencilTexturResource(const Microsoft::WRL::ComPtr <ID3D12Device>& device, int32_t width, int32_t height) {
@@ -1101,28 +1091,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Microsoft::WRL::ComPtr <ID3D12Resource> depthStencilResource = CreateDepthStencilTexturResource(
 		dxCommon->GetDevice(), WinApp::kClientWidth, WinApp::kClientHeight);
 
-	// DSV用のヒープディスクリプタの数は1
-	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> dsvdescriptorHeap = CreateDescriptorHeap(dxCommon->GetDevice(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
-
-	// DSVの設定
-	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
-	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-
-	// DSVHeapの先頭にDSVを作る
-	dxCommon->GetDevice()->CreateDepthStencilView(depthStencilResource.Get(), &dsvDesc, dsvdescriptorHeap->GetCPUDescriptorHandleForHeapStart());
-
 	// Textuer切り替え変数
 	bool useMonsterBall = false;
 
 	transform.rotate.y = 3.0f;
-
-	// XAudio2の初期化
-	Microsoft::WRL::ComPtr<IXAudio2> xAudio2;
-	IXAudio2MasteringVoice* masterVoice;
-	HRESULT result = XAudio2Create(&xAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR);
-	result = xAudio2->CreateMasteringVoice(&masterVoice);
-	assert(SUCCEEDED(result));
 
 		// ウィンクラのxボタンが押されるまでループ
 	while (true) {
@@ -1213,8 +1185,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// 書き込むアドレスを取得する
 		wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
-
-		D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvdescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
 		// 描画前処理
 		dxCommon->PreDraw();
