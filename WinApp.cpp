@@ -4,6 +4,8 @@
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
 
+#pragma comment(lib,"winmm.lib")
+
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 LRESULT CALLBACK WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
@@ -64,6 +66,9 @@ void WinApp::Initialize() {
 	);
 
 	ShowWindow(hwnd, SW_SHOW);
+
+	// システムタイマーの分解機能を上げる
+	timeBeginPeriod(1);
 }
 
 void WinApp::Finalize() {

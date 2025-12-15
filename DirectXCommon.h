@@ -7,6 +7,8 @@
 #include <array>
 #include <dxcapi.h>
 #include <string>
+#include <chrono>
+
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
@@ -98,6 +100,12 @@ private:
 
 	// GPUディスクリプタハンドルを取得する関数
 	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(const Microsoft::WRL::ComPtr <ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
+
+	// FPS固定初期化
+	void InitializeFixFps();
+
+	// FPS固定更新
+	void UpdateFixFps();
 
 	// winApp
 	WinApp* winApp = nullptr;
@@ -216,4 +224,7 @@ private:
 	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResource = nullptr;
 
 	DirectX::ScratchImage image{};
+
+	// 記録時間
+	std::chrono::steady_clock::time_point reference_;
 };
