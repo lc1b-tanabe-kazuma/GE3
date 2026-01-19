@@ -7,9 +7,16 @@ class  SpriteCommon;
 
 class Sprite {
 public:
+
 	void Initialize(SpriteCommon* spriteCommon);
+
 	void Update();
+
 	void Draw();
+
+	const Math::Vector2& GetPosition() { return position; }
+
+	void SetPosition(const Math::Vector2& pos) { this->position = pos; }
 private:
 	SpriteCommon* spriteCommon_ = nullptr;
 
@@ -61,4 +68,6 @@ private:
 
 	// transformの初期化
 	Math::TransForm transform;
+
+	Math::Vector2 position = { 0.0f,0.0f };
 };

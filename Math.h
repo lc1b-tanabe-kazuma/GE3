@@ -36,6 +36,34 @@ namespace Math {
 		Vector3 translate;
 	};
 
+	inline Vector2 operator+(const Vector2& a, const Vector2& b) {
+		return { a.x + b.x, a.y + b.y };
+	}
+
+	inline Vector2& operator+=(Vector2& a, const Vector2& b) {
+		a.x += b.x;
+		a.y += b.y;
+		return a;
+	}
+
+	inline Vector2 operator-(const Vector2& a, const Vector2& b) {
+		return { a.x - b.x, a.y - b.y };
+	}
+
+	inline Vector2 operator*(const Vector2& v, float s) {
+		return { v.x * s, v.y * s };
+	}
+
+	inline Vector2 operator*(float s, const Vector2& v) {
+		return { v.x * s, v.y * s };
+	}
+
+	inline Vector2& operator-=(Vector2& a, const Vector2& b) {
+		a.x -= b.x;
+		a.y -= b.y;
+		return a;
+	}
+
 #pragma region 行列関連関数
 	// 行列の積
 	Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2);
@@ -59,7 +87,7 @@ namespace Math {
 
 	// 長さ
 	float Length(const Vector3& v);
-    
+
 	// ベクトルの正規化
 	Vector3 Normalize(const Vector3& v);
 

@@ -1,6 +1,7 @@
 #include "Math.h"
 
 namespace Math {
+
 #pragma region 行列関連関数
 	// 行列の積
 	Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {

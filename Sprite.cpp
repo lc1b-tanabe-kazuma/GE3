@@ -86,6 +86,8 @@ void Sprite::Update() {
 	// 単位行列を書き込む
 	transeformationMatrixData->World = makeIdentity4x4();
 
+	transform.translate = { position.x,position.y,0.0f };
+
 	// スプライト用のレンダリングパイプライン
 	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 	Matrix4x4 viewmatrixSprite = makeIdentity4x4();
@@ -95,22 +97,22 @@ void Sprite::Update() {
 }
 
 void Sprite::Draw() {
-	
+
 	// 頂点バッファをセット
 	spriteCommon_->GetDirectXCommon()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
-	
+
 	// インデックスバッファをセット
 	spriteCommon_->GetDirectXCommon()->GetCommandList()->IASetIndexBuffer(&indexBufferView);
-	
+
 	// 形状の設定
 	spriteCommon_->GetDirectXCommon()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	
+
 	// スプライト用のマテリアルCBufferを設定
 	spriteCommon_->GetDirectXCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-	
+
 	// スプライト用のTransformationMatrixCBufferを設定
 	spriteCommon_->GetDirectXCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
-	
+
 	// 描画コマンド
 	spriteCommon_->GetDirectXCommon()->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }

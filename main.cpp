@@ -780,6 +780,11 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 		uvTransformMatrix = Multiply(MakeTransMatrix(uvTransformSprite.translate), uvTransformMatrix);
 		//materialDataSprite->uvTranseform = uvTransformMatrix;
 */
+
+		Vector2 pos = sprite->GetPosition();
+		pos += Vector2{ 1.0f, 0.0f };
+		sprite->SetPosition(pos);
+
 		sprite->Update();
 
 		ImGui::Render();
