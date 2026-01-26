@@ -1,4 +1,6 @@
-#include "Math.h"
+#include "Mymath.h"
+
+using namespace std;
 
 namespace Math {
 

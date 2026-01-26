@@ -1,25 +1,16 @@
 #define DIRECTINPUT_VERSION 0x0800
 
 #include <windows.h>
-#include <cstdint>
-#include <string>
-//#include <format>
-#include <filesystem>
 #include <fstream>
-#include <sstream>
-#include <d3d12.h> 
-#include <dxgi1_6.h> 
 #include <cassert>
-#include <dbgHelp.h>
 #include <strsafe.h>
-#include <dxgidebug.h>
-#include <dxcapi.h>
+
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 #include "externals/DirectXTex/DirectXTex.h"
-#include "externals/DirectXTex/d3dx12.h"
+#include "externals/DirectXTex/d3dx12.h"s
 
 #include <wrl.h>
 #include <xaudio2.h>
@@ -29,16 +20,9 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg
 #include "D3DResourceLeakChecker.h"
 #include "SpriteCommon.h"
 #include "Sprite.h"
-#include "Math.h"
+#include "Mymath.h"
 
-#pragma comment(lib,"d3d12.lib")
-#pragma comment(lib,"dxgi.lib")
-#pragma comment(lib,"DbgHelp.lib")
-#pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"dxcompiler.lib")
-#pragma comment(lib, "d3d11.lib")
-#pragma comment(lib, "dxguid.lib")
-#pragma comment(lib, "windowscodecs.lib")
 #pragma comment(lib, "xaudio2.lib")
 
 using namespace Math;

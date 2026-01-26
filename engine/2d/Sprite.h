@@ -1,7 +1,7 @@
 #pragma once
 #include <wrl.h>
 #include <d3d12.h>
-#include "Math.h"
+#include "mymath.h"
 
 class  SpriteCommon;
 
