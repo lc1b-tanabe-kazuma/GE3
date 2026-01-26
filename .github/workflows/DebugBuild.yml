@@ -7,7 +7,7 @@ env:
   SOLUTION_FILE_: project/CG2_DirectXGame.sln
   CONFIGURATION: Debug
 jobs:
-  build:
+    build:
     runs-on: windows-2022
 
     steps:
