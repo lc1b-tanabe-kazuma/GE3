@@ -18,6 +18,6 @@ jobs:
         uses: microsoft/setup-msbuild@v2
           with:
             msbuild-architecture: x64
-              - name: Build
-                run: |
+            - name: Build
+               run: |
                  msbuild ${{env.SOLUTION_FILW_PATH}} /p:platform=x64,configration=${{env.CONFIGRATION}]
