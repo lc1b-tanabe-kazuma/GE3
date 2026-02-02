@@ -7,7 +7,7 @@ on:
 
 env:
   SOLUTION_FILE_PATH: project/CG2_DirectXGame.sln
-  CONFIGURATION: DevelopmentBuildBuild
+  CONFIGURATION: DevelopmentBuild
 
 jobs:
   build:
