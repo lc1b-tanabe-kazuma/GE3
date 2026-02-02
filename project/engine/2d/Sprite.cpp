@@ -86,7 +86,10 @@ void Sprite::Update() {
 	// 単位行列を書き込む
 	transeformationMatrixData->World = makeIdentity4x4();
 
+	// 諸々の処理
 	transform.translate = { position.x,position.y,0.0f };
+
+	transform.rotate = { 0.0f,0.0f,rotation };
 
 	// スプライト用のレンダリングパイプライン
 	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);

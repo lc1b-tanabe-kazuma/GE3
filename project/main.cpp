@@ -733,7 +733,7 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 		// ImGuiのSpriteウィンドウを作成
 		ImGui::Begin("Sprite");
 		// ImGuiでSpriteの位置を変える
-		ImGui::DragFloat3("TranslateSprite", reinterpret_cast<float*>(&transformSprite.translate.x), 1.0f);
+		ImGui::DragFloat3("TranslateSprite", reinterpret_cast<float*>(&transformSprite.translate.x), 0.01f);
 		// ImGuiでSpriteの回転を変える
 		ImGui::DragFloat3("RotateSprite", reinterpret_cast<float*>(&transformSprite.rotate.x), 0.01f);
 		// ImGuiでSpriteのスケールを変える
@@ -746,6 +746,15 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 		ImGui::DragFloat2("ScaleUV", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
 		// ImGuiのウィンドウを閉じる
 		ImGui::End();
+
+		Vector2 pos = sprite->GetPosition();
+		pos += Vector2{ 1.0f, 0.0f };
+		sprite->SetPosition(pos);
+
+		// 角度を変化させるテスト
+		float rote = sprite->GetRotation();
+		rote += 0.01f;
+		sprite->SetRotation(rote);
 
 		/*
 		// レンダリングパイプライン
@@ -764,10 +773,6 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 		uvTransformMatrix = Multiply(MakeTransMatrix(uvTransformSprite.translate), uvTransformMatrix);
 		//materialDataSprite->uvTranseform = uvTransformMatrix;
 */
-
-		Vector2 pos = sprite->GetPosition();
-		pos += Vector2{ 1.0f, 0.0f };
-		sprite->SetPosition(pos);
 
 		sprite->Update();
 

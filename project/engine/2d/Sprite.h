@@ -17,6 +17,10 @@ public:
 	const Math::Vector2& GetPosition() { return position; }
 
 	void SetPosition(const Math::Vector2& pos) { this->position = pos; }
+
+	float GetRotation() { return rotation; }
+	void SetRotation(float rot) { this->rotation = rot; }
+
 private:
 	SpriteCommon* spriteCommon_ = nullptr;
 
@@ -70,4 +74,6 @@ private:
 	Math::TransForm transform;
 
 	Math::Vector2 position = { 0.0f,0.0f };
+
+	float rotation = 0.0f;
 };
