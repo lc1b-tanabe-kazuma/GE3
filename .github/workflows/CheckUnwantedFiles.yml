@@ -19,7 +19,7 @@ jobs:
 
     steps:
        - name: リポジトリをチェックアウト
-         uses: actions/checkout@v4,
+         uses: actions/checkout@v4
 
        - name: 不要なファイルとディレクトリを検索 (bash)
          run: |
