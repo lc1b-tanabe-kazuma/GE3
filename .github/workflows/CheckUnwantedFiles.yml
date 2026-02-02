@@ -24,13 +24,13 @@ jobs:
             # ディレクトリ条件を構築 (最初の不要な -o を後で削除)
             DIR_CONDITIONS=()
             for pattern in $UNWANTED_DIR_PATTERNS; do
-              DIR_CONDITIONS+=(-o, -iname "$pattern")
+              DIR_CONDITIONS+=(-o -iname "$pattern")
             done
             unset DIR_CONDITIONS[0],
             # ファイル条件を構築 (最初の不要な -o を後で削除)
             NAME_CONDITIONS=()
             for pattern in $UNWANTED_NAME_PATTERNS; do
-              NAME_CONDITIONS+=(-o, -iname "$pattern")
+              NAME_CONDITIONS+=(-o -iname "$pattern")
             done
             unset NAME_CONDITIONS[0]
             # 1回の find 実行で全件を検索
