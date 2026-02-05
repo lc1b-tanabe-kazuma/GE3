@@ -14,6 +14,8 @@ using namespace Logeer;
 using namespace StringUtility;
 using namespace std;
 
+const uint32_t DirectXCommon::kMaxSRVCount = 512;
+
 void DirectXCommon::Initialize(WinApp* winApp) {
 
 	// FPS固定初期化
@@ -199,23 +201,6 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::UploadTextureData(const Mi
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
 	commandList->ResourceBarrier(1, &barrier);
 	return intermediateResource;
-}
-
-DirectX::ScratchImage DirectXCommon::LoadTexture(const std::string& filePath) {
-
-	// テクスチャファイルを読んでプログラムで扱えるようにする
-	DirectX::ScratchImage image{};
-	std::wstring wFilePath = ConvertString(filePath);
-	HRESULT hr = DirectX::LoadFromWICFile(wFilePath.c_str(), DirectX::WIC_FLAGS_NONE, nullptr, image);
-	assert(SUCCEEDED(hr));
-
-	// ミップマップを生成する
-	DirectX::ScratchImage mipImage{};
-	hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0, mipImage);
-	assert(SUCCEEDED(hr));
-
-	// ミップマップを返す
-	return mipImage;
 }
 
 void DirectXCommon::DeviceInitialize() {
@@ -422,7 +407,7 @@ void DirectXCommon::DescriptorHeapsInitialize() {
 
 	// RTVのディスクリプタヒープの生成
 	rtvDescriptorHeap = CreateDescriptorHeap(
-		D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
+		D3D12_DESCRIPTOR_HEAP_TYPE_RTV, kMaxSRVCount, true);
 
 	// SRVのディスクリプタヒープを作成する
 	srvDescriptorHeap = CreateDescriptorHeap(

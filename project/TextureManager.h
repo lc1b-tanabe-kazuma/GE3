@@ -1,11 +1,23 @@
 #pragma once
+#include <string>
+#include "DirectXTex/DirectXTex.h"
+#include <wrl/client.h>
+#include <d3d12.h>
+#include "DirectXCommon.h"
+
 class TextureManager {
 public:
 	// シングルトンインスタンスの取得
 	static TextureManager* GetInstance();
 
+	// 初期化
+	void Initialize();
+
 	// 終了
 	static void Finalize();
+
+	// LoadTexture関数
+	void LoadTexture(const std::string& filePath);
 
 private:
 	static TextureManager* instance;
@@ -14,4 +26,18 @@ private:
 	~TextureManager() = default;
 	TextureManager(TextureManager&) = delete;
 	TextureManager& operator=(const TextureManager&) = delete;
+
+	// テクスチャ一枚分のデータ
+	struct TextuerData {
+		std::string filePath;
+		DirectX::TexMetadata metadata;
+		Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+		D3D12_CPU_DESCRIPTOR_HANDLE srvHandleCPU;
+		D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU;
+	};
+
+	// テクスチャデータ
+	std::vector<TextuerData> textureDatas;
+
+	DirectXCommon* dxCommon;
 };

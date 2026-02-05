@@ -21,6 +21,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg
 #include "SpriteCommon.h"
 #include "Sprite.h"
 #include "Mymath.h"
+#include "TextureManager.h"
 
 #pragma comment(lib,"dxcompiler.lib")
 #pragma comment(lib, "xaudio2.lib")
@@ -359,6 +360,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Sprite* sprite = sprite = new Sprite();
 	sprite->Initialize(spriteCommon);
+
+	// テクスチャマネージャーの初期化
+	TextureManager::GetInstance()->Initialize();
 
 	/*
 	D3D12_STATIC_SAMPLER_DESC staticSamlers[1] = {};
@@ -858,6 +862,9 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 
 	// WindowsAPIの終了処理
 	winApp->Finalize();
+
+	// テクスチャマネージャーの終了処理
+	TextureManager::GetInstance()->Finalize();
 
 	delete input;
 	delete winApp;

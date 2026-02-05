@@ -46,13 +46,13 @@ public:
 	// テクスチャーファイルの読み込み
 	Microsoft::WRL::ComPtr <ID3D12Resource> UploadTextureData(const Microsoft::WRL::ComPtr <ID3D12Resource>& texture, const DirectX::ScratchImage& mipImage);
 
-	// LoadTexture関数
-	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
-
 	// シェーダーのコンパイル
 	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(
 		const std::wstring& filePath,
 		const wchar_t* profile);
+
+	// 最大SRV数
+	static const uint32_t kMaxSRVCount;
 
 private:
 
