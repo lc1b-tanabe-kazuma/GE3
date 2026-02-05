@@ -21,6 +21,14 @@ public:
 	float GetRotation() { return rotation; }
 	void SetRotation(float rot) { this->rotation = rot; }
 
+	// 色変更
+	const Math::Vector4& GetColor() { return materialData->color; }
+	void SetColor(const Math::Vector4& color) { this->materialData->color = color; }
+
+	// サイズ変更
+	const Math::Vector2& GetSize()const { return size; }
+	void SetSize(const Math::Vector2& size) { this->size = size; }
+
 private:
 	SpriteCommon* spriteCommon_ = nullptr;
 
@@ -76,4 +84,6 @@ private:
 	Math::Vector2 position = { 0.0f,0.0f };
 
 	float rotation = 0.0f;
+
+	Math::Vector2 size = { 640.0f,360.0f };
 };

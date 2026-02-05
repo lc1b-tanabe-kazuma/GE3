@@ -54,7 +54,7 @@ void Sprite::Update() {
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 
 	// 左下
-	vertexData[0].position = { 0.0f,360.0f,0.0f,1.0f };
+	vertexData[0].position = { 0.0f,1.0f,0.0f,1.0f };
 	vertexData[0].texcoord = { 0.0f,1.0f };
 
 	// 上
@@ -62,18 +62,18 @@ void Sprite::Update() {
 	vertexData[1].texcoord = { 0.0f,0.0f };
 
 	// 右下
-	vertexData[2].position = { 640.0f,360.0f,0.0f,1.0f };
+	vertexData[2].position = { 1.0f,1.0f,0.0f,1.0f };
 	vertexData[2].texcoord = { 1.0f,1.0f };
 
 	// 右上
-	vertexData[3].position = { 640.0f,0.0f,0.0f,1.0f };
+	vertexData[3].position = { 1.0f,0.0f,0.0f,1.0f };
 	vertexData[3].texcoord = { 1.0f,0.0f };
 
 	// 法線
 	vertexData[0].nomal = { 0.0f,0.0f,1.0f };
 	vertexData[1].nomal = { 0.0f,0.0f,1.0f };
 	vertexData[2].nomal = { 0.0f,0.0f,1.0f };
-	vertexData[3].nomal = { 0.0f,0.0f,1.0f };
+	vertexData[3].nomal = { 0.0f,0.0f,-1.0f };
 
 	// インデックスリソースにデータを書き込む
 	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
@@ -86,10 +86,13 @@ void Sprite::Update() {
 	// 単位行列を書き込む
 	transeformationMatrixData->World = makeIdentity4x4();
 
-	// 諸々の処理
+	/// ============= 諸々の処理 =================
 	transform.translate = { position.x,position.y,0.0f };
 
 	transform.rotate = { 0.0f,0.0f,rotation };
+
+	// サイズ反映
+	transform.scale = { size.x,size.y,1.0f };
 
 	// スプライト用のレンダリングパイプライン
 	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);

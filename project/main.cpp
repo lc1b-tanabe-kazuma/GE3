@@ -625,7 +625,6 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 
 	// transformの初期化
 	TransForm transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
-	TransForm transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	TransForm cameraTransform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,-5.0f} };
 
 	// DescriptorSizeを取得しておく
@@ -730,30 +729,40 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 		// ImGuiのウィンドウを閉じる
 		ImGui::End();
 
-		// ImGuiのSpriteウィンドウを作成
-		ImGui::Begin("Sprite");
-		// ImGuiでSpriteの位置を変える
-		ImGui::DragFloat3("TranslateSprite", reinterpret_cast<float*>(&transformSprite.translate.x), 0.01f);
-		// ImGuiでSpriteの回転を変える
-		ImGui::DragFloat3("RotateSprite", reinterpret_cast<float*>(&transformSprite.rotate.x), 0.01f);
-		// ImGuiでSpriteのスケールを変える
-		ImGui::DragFloat3("ScaleSprite", reinterpret_cast<float*>(&transformSprite.scale.x), 0.01f);
-		// ImGuiでUVTransformの位置を変える
-		ImGui::DragFloat2("TranslateUV", reinterpret_cast<float*>(&uvTransformSprite.translate.x), 0.01f, -10.0f, 10.0f);
-		// ImGuiでUVTransformの回転を変える
-		ImGui::SliderAngle("RotateUV", reinterpret_cast<float*>(&uvTransformSprite.rotate.z));
-		// ImGuiでUVTransformのスケールを変える
-		ImGui::DragFloat2("ScaleUV", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-		// ImGuiのウィンドウを閉じる
-		ImGui::End();
-
+		// 位置を変化させるテスト
 		Vector2 pos = sprite->GetPosition();
-		pos += Vector2{ 1.0f, 0.0f };
-		sprite->SetPosition(pos);
 
 		// 角度を変化させるテスト
 		float rote = sprite->GetRotation();
-		rote += 0.01f;
+
+		// 色を変化させるテスト
+		Vector4 color = sprite->GetColor();
+
+		// サイズを変化させるテスト
+		Vector2 size = sprite->GetSize();
+
+		// ImGuiのSpriteウィンドウを作成
+		ImGui::Begin("Sprite");
+
+		// ImGuiでSpriteの位置を変える
+		ImGui::DragFloat2("SpriteTranslate", reinterpret_cast<float*>(&pos.x), 1.0f);
+
+		// ImGuiでSpriteのサイズを変える
+		ImGui::DragFloat2("SpriteSize", reinterpret_cast<float*>(&size.x), 1.0f);
+
+		// ImGuiでSpriteの色を変える
+		ImGui::ColorEdit4("SpriteColor", reinterpret_cast<float*>(&color.x));
+
+		// ImGuiでSpriteの回転を変える
+		ImGui::DragFloat("SpriteRote", &rote, 0.01f);
+
+		// ImGuiのウィンドウを閉じる
+		ImGui::End();
+
+		// 変更を反映させる
+		sprite->SetPosition(pos);
+		sprite->SetSize(size);
+		sprite->SetColor(color);
 		sprite->SetRotation(rote);
 
 		/*
