@@ -16,7 +16,8 @@ TextureManager* TextureManager::GetInstance() {
 	return instance;
 }
 
-void TextureManager::Initialize() {
+void TextureManager::Initialize(DirectXCommon* dxCommon) {
+	this->dxCommon_ = dxCommon;
 	// SRVの数と同数
 	textureDatas.reserve(DirectXCommon::kMaxSRVCount);
 }
@@ -50,7 +51,7 @@ void TextureManager::LoadTexture(const std::string& filePath) {
 	assert(SUCCEEDED(hr));
 
 	// テクスチャデータを追加
-	textureDatas.resize(textureDatas.size() + 1);
+	textureDatas.resize(textureDatas.size() + 1 +kSRVtIndexTop);
 
 	// 追加したテクスチャデータの参照を取得する
 	TextuerData& textureData = textureDatas.back();
@@ -60,14 +61,14 @@ void TextureManager::LoadTexture(const std::string& filePath) {
 	// メタデータを保存
 	textureData.metadata = mipImage.GetMetadata();
 	// テクスチャリソースを生成
-	textureData.resource = dxCommon->CreateTextuerResource(textureData.metadata);
+	textureData.resource = dxCommon_->CreateTextuerResource(textureData.metadata);
 
 	// テクスチャデータの要素数番号をSRVのインデックス番号とする
-	uint32_t srvIndex = static_cast<uint32_t>(textureDatas.size() - 1) + kSRVtIndexTop;
+	uint32_t srvIndex = static_cast<uint32_t>(textureDatas.size() - 1);
 	// SRVのCPUハンドルを取得
-	textureData.srvHandleCPU = dxCommon->GetSRVCPUDescriptorHandle(srvIndex);
+	textureData.srvHandleCPU = dxCommon_->GetSRVCPUDescriptorHandle(srvIndex);
 	// SRVのGPUハンドルを取得
-	textureData.srvHandleGPU = dxCommon->GetSRVGPUDescriptorHandle(srvIndex);
+	textureData.srvHandleGPU = dxCommon_->GetSRVGPUDescriptorHandle(srvIndex);
 
 	// SRVを設定
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
@@ -77,28 +78,28 @@ void TextureManager::LoadTexture(const std::string& filePath) {
 	srvDesc.Texture2D.MipLevels = static_cast<UINT>(textureData.metadata.mipLevels);
 
 	// 設定を基にSRVを生成
-	dxCommon->GetDevice()->CreateShaderResourceView(
+	dxCommon_->GetDevice()->CreateShaderResourceView(
 		textureData.resource.Get(), // リソース
 		&srvDesc, // SRVの設定
 		textureData.srvHandleCPU); // ハンドル
 
 	// すぐに転送完了をまつ
 	Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource =
-		dxCommon->UploadTextureData(textureData.resource, mipImage);
+		dxCommon_->UploadTextureData(textureData.resource, mipImage);
 
 	// commandListをCloseし、commandQueueに投げる
 	ID3D12CommandList* commandLists[] = {
-		dxCommon->GetCommandList()
+		dxCommon_->GetCommandList()
 	};
-	dxCommon->GetCommandList()->Close();
-	dxCommon->GetCommandQueue()->ExecuteCommandLists(1, commandLists);
+	dxCommon_->GetCommandList()->Close();
+	dxCommon_->GetCommandQueue()->ExecuteCommandLists(1, commandLists);
 
 	// 実行完了を待つ（Fence）
-	dxCommon->WaitForGPU();
+	dxCommon_->WaitForGPU();
 
 	// コマンドアロケーターとコマンドリストをリセット
-	dxCommon->GetCommandAllocator()->Reset();
-	dxCommon->ResetCommandList();
+	dxCommon_->GetCommandAllocator()->Reset();
+	dxCommon_->ResetCommandList();
 }
 
 uint32_t TextureManager::GetTextureIndexByFilePath(const std::string& filePath) {

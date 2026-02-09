@@ -16,7 +16,7 @@ public:
 	static TextureManager* GetInstance();
 
 	// 初期化
-	void Initialize();
+	void Initialize(DirectXCommon* dxCommon);
 
 	// 終了
 	static void Finalize();
@@ -50,7 +50,7 @@ private:
 	// テクスチャデータ
 	std::vector<TextuerData> textureDatas;
 
-	DirectXCommon* dxCommon;
+	DirectXCommon* dxCommon_;
 
 	// SRVインデックスの開始番号
 	static uint32_t kSRVtIndexTop;

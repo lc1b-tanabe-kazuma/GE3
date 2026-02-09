@@ -354,7 +354,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	input->Initialize(winApp);
 
 	// テクスチャマネージャーの初期化
-	TextureManager::GetInstance()->Initialize();
+	TextureManager::GetInstance()->Initialize(dxCommon);
 
 	// Textureの読んで転送する
 	TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
