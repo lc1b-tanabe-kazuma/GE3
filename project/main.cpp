@@ -22,6 +22,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg
 #include "Sprite.h"
 #include "Mymath.h"
 #include "TextureManager.h"
+#include <iostream>
 
 #pragma comment(lib,"dxcompiler.lib")
 #pragma comment(lib, "xaudio2.lib")
@@ -352,17 +353,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	input = new Input();
 	input->Initialize(winApp);
 
-	// スプライトの初期化
-	SpriteCommon* spriteCommon = nullptr;
-
-	spriteCommon = new SpriteCommon();
-	spriteCommon->Initialize(dxCommon);
-
-	Sprite* sprite = sprite = new Sprite();
-	sprite->Initialize(spriteCommon);
-
 	// テクスチャマネージャーの初期化
 	TextureManager::GetInstance()->Initialize();
+
+	// Textureの読んで転送する
+	TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
+
+	// 2枚目のTextureの読んで転送する
+	TextureManager::GetInstance()->LoadTexture("resources/monsterBall.png");
+
+	// スプライトの初期化
+	SpriteCommon* spriteCommon = new SpriteCommon();
+	spriteCommon->Initialize(dxCommon);
+
+	// スプライトの複数表示	
+	std::vector<Sprite*> sprites;
+	for (int32_t i = 0; i < 5; ++i) {
+		Sprite* sprite = nullptr;
+		sprite = new Sprite();
+		sprite->Initialize(spriteCommon,
+			"resources/uvChecker.png");
+		sprites.push_back(sprite);
+	}
 
 	/*
 	D3D12_STATIC_SAMPLER_DESC staticSamlers[1] = {};
@@ -636,32 +648,6 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 	const uint32_t descriptorSizeRTV = dxCommon->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	const uint32_t descriptorSizeDSV = dxCommon->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
-	// Textureの読んで転送する
-	DirectX::ScratchImage mipImage = dxCommon->LoadTexture("resources/uvChecker.png");
-	const DirectX::TexMetadata& metadata = mipImage.GetMetadata();
-	Microsoft::WRL::ComPtr <ID3D12Resource> textureResource = dxCommon->CreateTextuerResource(metadata);
-	Microsoft::WRL::ComPtr <ID3D12Resource> intermediateResource = dxCommon->UploadTextureData(textureResource, mipImage);
-
-	// 2枚目のTextureの読んで転送する
-	DirectX::ScratchImage mipImage2 = dxCommon->LoadTexture("resources/monsterBall.png");
-	const DirectX::TexMetadata& metadata2 = mipImage2.GetMetadata();
-	Microsoft::WRL::ComPtr <ID3D12Resource> textureResource2 = dxCommon->CreateTextuerResource(metadata2);
-	Microsoft::WRL::ComPtr <ID3D12Resource> intermediateResource2 = dxCommon->UploadTextureData(textureResource2, mipImage2);
-
-	// metadataを元にSRVの設定
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-	srvDesc.Format = metadata.format;
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
-
-	// metadataを元にSRVの設定
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc2{};
-	srvDesc2.Format = metadata2.format;
-	srvDesc2.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc2.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc2.Texture2D.MipLevels = UINT(metadata2.mipLevels);
-
 	// ImGuiを除いた 1番目のテクスチャ
 	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU =
 		dxCommon->GetSRVCPUDescriptorHandle(1);
@@ -675,10 +661,6 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU2 =
 		dxCommon->GetSRVGPUDescriptorHandle(2);
-
-	// SRVを作成する
-	dxCommon->GetDevice()->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
-	dxCommon->GetDevice()->CreateShaderResourceView(textureResource2.Get(), &srvDesc2, textureSrvHandleCPU2);
 
 	// DepthStencilTexture
 	Microsoft::WRL::ComPtr <ID3D12Resource> depthStencilResource = CreateDepthStencilTexturResource(
@@ -709,6 +691,7 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 		// ゲーム処理
 		//===========================
 
+		/*
 		// ImGuiの処理
 		// ImGuiのウィンドウを作成
 		ImGui::Begin("Plane.obj");
@@ -732,42 +715,15 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 		ImGui::Checkbox("useMonsterBall", &useMonsterBall);
 		// ImGuiのウィンドウを閉じる
 		ImGui::End();
-
-		// 位置を変化させるテスト
-		Vector2 pos = sprite->GetPosition();
-
-		// 角度を変化させるテスト
-		float rote = sprite->GetRotation();
-
-		// 色を変化させるテスト
-		Vector4 color = sprite->GetColor();
-
-		// サイズを変化させるテスト
-		Vector2 size = sprite->GetSize();
+		*/
 
 		// ImGuiのSpriteウィンドウを作成
 		ImGui::Begin("Sprite");
-
-		// ImGuiでSpriteの位置を変える
-		ImGui::DragFloat2("SpriteTranslate", reinterpret_cast<float*>(&pos.x), 1.0f);
-
-		// ImGuiでSpriteのサイズを変える
-		ImGui::DragFloat2("SpriteSize", reinterpret_cast<float*>(&size.x), 1.0f);
-
-		// ImGuiでSpriteの色を変える
-		ImGui::ColorEdit4("SpriteColor", reinterpret_cast<float*>(&color.x));
-
-		// ImGuiでSpriteの回転を変える
-		ImGui::DragFloat("SpriteRote", &rote, 0.01f);
 
 		// ImGuiのウィンドウを閉じる
 		ImGui::End();
 
 		// 変更を反映させる
-		sprite->SetPosition(pos);
-		sprite->SetSize(size);
-		sprite->SetColor(color);
-		sprite->SetRotation(rote);
 
 		/*
 		// レンダリングパイプライン
@@ -787,7 +743,10 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 		//materialDataSprite->uvTranseform = uvTransformMatrix;
 */
 
-		sprite->Update();
+// spriteの更新
+		for (Sprite* sprite : sprites) {
+			sprite->Update();
+		}
 
 		ImGui::Render();
 		// ↑ ゲーム処理はここまで
@@ -840,7 +799,9 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 		// Spriteの表示する画像を設定
 		dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 
-		sprite->Draw();
+		for (Sprite* sprite : sprites) {
+			sprite->Draw();
+		}
 
 		// Spriteの描画
 		//dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
@@ -868,7 +829,9 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 
 	delete input;
 	delete winApp;
-	delete sprite;
+	for (auto sprite : sprites) {
+		delete sprite;
+	}
 	delete spriteCommon;
 	delete dxCommon;
 	return 0;

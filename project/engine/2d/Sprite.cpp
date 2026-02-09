@@ -1,9 +1,10 @@
 #include "Sprite.h"
 #include "SpriteCommon.h"
+#include "TextureManager.h"
 
 using namespace Math;
 
-void Sprite::Initialize(SpriteCommon* spriteCommon) {
+void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath) {
 	// 引数をメンバ変数にセット
 	this->spriteCommon_ = spriteCommon;
 
@@ -43,6 +44,9 @@ void Sprite::Initialize(SpriteCommon* spriteCommon) {
 	// 単位行列を書き込む
 	transeformationMatrixData->WVP = makeIdentity4x4();
 	transeformationMatrixData->World = makeIdentity4x4();
+
+	// テクスチャの読み込みとテクスチャインデックスの取得
+	textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
 
 	// transformの初期化
 	transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
@@ -118,6 +122,9 @@ void Sprite::Draw() {
 
 	// スプライト用のTransformationMatrixCBufferを設定
 	spriteCommon_->GetDirectXCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
+
+	// スプライト用のSRVのDescriptorTableを設定
+	spriteCommon_->GetDirectXCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2,TextureManager::GetInstance()->GetSRVHandleGPU(textureIndex));
 
 	// 描画コマンド
 	spriteCommon_->GetDirectXCommon()->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);

@@ -1,9 +1,14 @@
 #pragma once
 #include <string>
-#include "DirectXTex/DirectXTex.h"
 #include <wrl/client.h>
 #include <d3d12.h>
+#include <vector>
+#include <cstdint>
+#include "DirectXTex/DirectXTex.h"
 #include "DirectXCommon.h"
+
+// 前方宣言
+class DirectXCommon;
 
 class TextureManager {
 public:
@@ -18,6 +23,12 @@ public:
 
 	// LoadTexture関数
 	void LoadTexture(const std::string& filePath);
+
+	// SRVインデックスの開始番号
+	uint32_t GetTextureIndexByFilePath(const std::string& filePath);
+
+	// テクスチャ番号からSRVのGPUハンドルを取得
+	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVHandleGPU(uint32_t textureIndex);
 
 private:
 	static TextureManager* instance;
@@ -40,4 +51,7 @@ private:
 	std::vector<TextuerData> textureDatas;
 
 	DirectXCommon* dxCommon;
+
+	// SRVインデックスの開始番号
+	static uint32_t kSRVtIndexTop;
 };

@@ -168,7 +168,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\2d\SpriteCommon.cpp" />
     <ClCompile Include="engine\utility\StringUtility.cpp" />
     <ClCompile Include="engine\base\WinApp.cpp" />
-    <ClCompile Include="TextureManager.cpp" />
+    <ClCompile Include="engine\2d\TextureManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Object3d.PS.hlsl">
@@ -209,7 +209,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\2d\SpriteCommon.h" />
     <ClInclude Include="engine\utility\StringUtility.h" />
     <ClInclude Include="engine\base\WinApp.h" />
-    <ClInclude Include="TextureManager.h" />
+    <ClInclude Include="engine\2d\TextureManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Object3d.hlsli" />

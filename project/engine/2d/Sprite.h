@@ -2,13 +2,14 @@
 #include <wrl.h>
 #include <d3d12.h>
 #include "mymath.h"
+#include <string>  
 
 class  SpriteCommon;
 
 class Sprite {
 public:
 
-	void Initialize(SpriteCommon* spriteCommon);
+	void Initialize(SpriteCommon* spriteCommon, std::string textureFilePath);
 
 	void Update();
 
@@ -86,4 +87,7 @@ private:
 	float rotation = 0.0f;
 
 	Math::Vector2 size = { 640.0f,360.0f };
+
+	// テクスチャ番号
+	uint32_t textureIndex = 0;
 };

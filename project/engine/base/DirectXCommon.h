@@ -32,9 +32,15 @@ public:
 	// 描画後処理
 	void PostDraw();
 
+	void WaitForGPU();
+
+	void ResetCommandList();
+
 	// getter
 	ID3D12Device* GetDevice() { return device.Get(); }
 	ID3D12GraphicsCommandList* GetCommandList() { return commandList.Get(); }
+	ID3D12CommandQueue* GetCommandQueue() const { return commandQueue.Get(); }
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> GetCommandAllocator() const { return commandAllocator; }
 
 	// バッファリソースの生成
 	Microsoft::WRL::ComPtr<ID3D12Resource>CreateBufferResource(size_t sizeInBytes);
