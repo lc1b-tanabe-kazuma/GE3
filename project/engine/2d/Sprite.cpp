@@ -45,11 +45,17 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 	transeformationMatrixData->WVP = makeIdentity4x4();
 	transeformationMatrixData->World = makeIdentity4x4();
 
-	// テクスチャの読み込みとテクスチャインデックスの取得
-	textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
-
 	// transformの初期化
 	transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+
+	// 初期サイズを小さくする
+	size = { 64.0f, 64.0f };   // ← 好きなサイズ
+
+	//
+	TextureManager::GetInstance()->LoadTexture(textureFilePath);
+
+	// テクスチャの読み込みとテクスチャインデックスの取得
+	textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
 }
 
 void Sprite::Update() {
@@ -124,7 +130,7 @@ void Sprite::Draw() {
 	spriteCommon_->GetDirectXCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 
 	// スプライト用のSRVのDescriptorTableを設定
-	spriteCommon_->GetDirectXCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2,TextureManager::GetInstance()->GetSRVHandleGPU(textureIndex));
+	spriteCommon_->GetDirectXCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSRVHandleGPU(textureIndex));
 
 	// 描画コマンド
 	spriteCommon_->GetDirectXCommon()->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);

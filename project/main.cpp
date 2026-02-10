@@ -366,13 +366,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	SpriteCommon* spriteCommon = new SpriteCommon();
 	spriteCommon->Initialize(dxCommon);
 
+	std::vector<std::string> textures = {
+	"resources/uvChecker.png",
+	"resources/monsterBall.png"
+	};
+
 	// スプライトの複数表示	
 	std::vector<Sprite*> sprites;
 	for (int32_t i = 0; i < 5; ++i) {
 		Sprite* sprite = nullptr;
 		sprite = new Sprite();
 		sprite->Initialize(spriteCommon,
-			"resources/uvChecker.png");
+			textures[i % textures.size()]);
+		sprite->SetPosition({ i * 128.0f, 100.0f });
 		sprites.push_back(sprite);
 	}
 
@@ -648,26 +654,9 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 	const uint32_t descriptorSizeRTV = dxCommon->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	const uint32_t descriptorSizeDSV = dxCommon->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
-	// ImGuiを除いた 1番目のテクスチャ
-	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU =
-		dxCommon->GetSRVCPUDescriptorHandle(1);
-
-	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU =
-		dxCommon->GetSRVGPUDescriptorHandle(1);
-
-	// ImGuiを除いた 2番目のテクスチャ
-	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU2 =
-		dxCommon->GetSRVCPUDescriptorHandle(2);
-
-	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU2 =
-		dxCommon->GetSRVGPUDescriptorHandle(2);
-
 	// DepthStencilTexture
 	Microsoft::WRL::ComPtr <ID3D12Resource> depthStencilResource = CreateDepthStencilTexturResource(
 		dxCommon->GetDevice(), WinApp::kClientWidth, WinApp::kClientHeight);
-
-	// Textuer切り替え変数
-	bool useMonsterBall = false;
 
 	transform.rotate.y = 3.0f;
 
@@ -720,8 +709,25 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 		// ImGuiのSpriteウィンドウを作成
 		ImGui::Begin("Sprite");
 
+		int index = 0;
+		for (Sprite* sprite : sprites) {
+
+			Vector2 pos = sprite->GetPosition(); // ← 自分自身！
+
+			std::string label = "Position##" + std::to_string(index);
+			ImGui::DragFloat2(label.c_str(), reinterpret_cast<float*>(&pos.x), 0.1f);
+
+			sprite->SetPosition(pos);
+			index++;
+		}
+
 		// ImGuiのウィンドウを閉じる
 		ImGui::End();
+
+		// spriteの更新
+		for (Sprite* sprite : sprites) {
+			sprite->Update();
+		}
 
 		// 変更を反映させる
 
@@ -742,11 +748,6 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 		uvTransformMatrix = Multiply(MakeTransMatrix(uvTransformSprite.translate), uvTransformMatrix);
 		//materialDataSprite->uvTranseform = uvTransformMatrix;
 */
-
-// spriteの更新
-		for (Sprite* sprite : sprites) {
-			sprite->Update();
-		}
 
 		ImGui::Render();
 		// ↑ ゲーム処理はここまで
@@ -778,7 +779,7 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 		//dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 
 		// SRVのDescriptorTableの設定
-		dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
+		//dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
 
 		// 球体用のIBVを設定
 		//dxCommon->GetCommandList()->IASetIndexBuffer(&indexBufferView);
@@ -797,7 +798,7 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 		//dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 
 		// Spriteの表示する画像を設定
-		dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+		//dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 
 		for (Sprite* sprite : sprites) {
 			sprite->Draw();

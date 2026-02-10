@@ -54,4 +54,7 @@ private:
 
 	// SRVインデックスの開始番号
 	static uint32_t kSRVtIndexTop;
+
+	DirectX::ScratchImage image{};
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
 };
