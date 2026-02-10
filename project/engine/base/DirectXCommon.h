@@ -32,9 +32,15 @@ public:
 	// 描画後処理
 	void PostDraw();
 
+	void WaitForGPU();
+
+	void ResetCommandList();
+
 	// getter
 	ID3D12Device* GetDevice() { return device.Get(); }
 	ID3D12GraphicsCommandList* GetCommandList() { return commandList.Get(); }
+	ID3D12CommandQueue* GetCommandQueue() const { return commandQueue.Get(); }
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> GetCommandAllocator() const { return commandAllocator; }
 
 	// バッファリソースの生成
 	Microsoft::WRL::ComPtr<ID3D12Resource>CreateBufferResource(size_t sizeInBytes);
@@ -46,13 +52,13 @@ public:
 	// テクスチャーファイルの読み込み
 	Microsoft::WRL::ComPtr <ID3D12Resource> UploadTextureData(const Microsoft::WRL::ComPtr <ID3D12Resource>& texture, const DirectX::ScratchImage& mipImage);
 
-	// LoadTexture関数
-	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
-
 	// シェーダーのコンパイル
 	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(
 		const std::wstring& filePath,
 		const wchar_t* profile);
+
+	// 最大SRV数
+	static const uint32_t kMaxSRVCount;
 
 private:
 

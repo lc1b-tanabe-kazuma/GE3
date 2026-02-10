@@ -99,6 +99,9 @@
     <ClCompile Include="engine\utility\StringUtility.cpp">
       <Filter>ソース ファイル\utility</Filter>
     </ClCompile>
+    <ClCompile Include="engine\2d\TextureManager.cpp">
+      <Filter>ソース ファイル\2d</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Object3d.VS.hlsl" />
@@ -158,6 +161,9 @@
     </ClInclude>
     <ClInclude Include="engine\utility\StringUtility.h">
       <Filter>ヘッダー ファイル\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\2d\TextureManager.h">
+      <Filter>ヘッダー ファイル\2d</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

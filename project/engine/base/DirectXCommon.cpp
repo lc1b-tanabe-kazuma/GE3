@@ -14,6 +14,8 @@ using namespace Logeer;
 using namespace StringUtility;
 using namespace std;
 
+const uint32_t DirectXCommon::kMaxSRVCount = 512;
+
 void DirectXCommon::Initialize(WinApp* winApp) {
 
 	// FPS固定初期化
@@ -201,23 +203,6 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::UploadTextureData(const Mi
 	return intermediateResource;
 }
 
-DirectX::ScratchImage DirectXCommon::LoadTexture(const std::string& filePath) {
-
-	// テクスチャファイルを読んでプログラムで扱えるようにする
-	DirectX::ScratchImage image{};
-	std::wstring wFilePath = ConvertString(filePath);
-	HRESULT hr = DirectX::LoadFromWICFile(wFilePath.c_str(), DirectX::WIC_FLAGS_NONE, nullptr, image);
-	assert(SUCCEEDED(hr));
-
-	// ミップマップを生成する
-	DirectX::ScratchImage mipImage{};
-	hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0, mipImage);
-	assert(SUCCEEDED(hr));
-
-	// ミップマップを返す
-	return mipImage;
-}
-
 void DirectXCommon::DeviceInitialize() {
 
 	assert(SUCCEEDED(hr));
@@ -359,13 +344,31 @@ void DirectXCommon::DepthBufferInitialize() {
 }
 
 // DescriptorHeapを作成する関数
-Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DirectXCommon::CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisble) {
-	descriptorHeapDesc.Type = heapType;
-	descriptorHeapDesc.NumDescriptors = numDescriptors;
-	descriptorHeapDesc.Flags = shaderVisble ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-	HRESULT hr = device->CreateDescriptorHeap(&descriptorHeapDesc, IID_PPV_ARGS(&descriptorHeap));
+Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>
+DirectXCommon::CreateDescriptorHeap(
+	D3D12_DESCRIPTOR_HEAP_TYPE heapType,
+	UINT numDescriptors,
+	bool shaderVisible)
+{
+	D3D12_DESCRIPTOR_HEAP_DESC desc{};
+	desc.Type = heapType;
+	desc.NumDescriptors = numDescriptors;
+
+	// ★ここでガードする
+	if (heapType == D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) {
+		desc.Flags = shaderVisible
+			? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE
+			: D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	} else {
+		// RTV / DSV は強制的に NONE
+		desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	}
+
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap;
+	HRESULT hr = device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&heap));
 	assert(SUCCEEDED(hr));
-	return descriptorHeap;
+
+	return heap;
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetCPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index)
@@ -422,7 +425,7 @@ void DirectXCommon::DescriptorHeapsInitialize() {
 
 	// RTVのディスクリプタヒープの生成
 	rtvDescriptorHeap = CreateDescriptorHeap(
-		D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
+		D3D12_DESCRIPTOR_HEAP_TYPE_RTV, kMaxSRVCount, true);
 
 	// SRVのディスクリプタヒープを作成する
 	srvDescriptorHeap = CreateDescriptorHeap(
@@ -614,4 +617,19 @@ void DirectXCommon::PostDraw() {
 	// コマンドリストのリセット
 	hr = commandList->Reset(commandAllocator.Get(), nullptr);
 	assert(SUCCEEDED(hr));
+}
+
+void DirectXCommon::WaitForGPU() {
+	fencevalue++;
+	commandQueue->Signal(fence.Get(), fencevalue);
+
+	if (fence->GetCompletedValue() < fencevalue) {
+		fence->SetEventOnCompletion(fencevalue, fenceEvent);
+		WaitForSingleObject(fenceEvent, INFINITE);
+	}
+}
+
+void DirectXCommon::ResetCommandList() {
+	commandAllocator->Reset();
+	commandList->Reset(commandAllocator.Get(), nullptr);
 }

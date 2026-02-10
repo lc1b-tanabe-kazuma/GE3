@@ -21,6 +21,8 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg
 #include "SpriteCommon.h"
 #include "Sprite.h"
 #include "Mymath.h"
+#include "TextureManager.h"
+#include <iostream>
 
 #pragma comment(lib,"dxcompiler.lib")
 #pragma comment(lib, "xaudio2.lib")
@@ -351,14 +353,34 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	input = new Input();
 	input->Initialize(winApp);
 
-	// スプライトの初期化
-	SpriteCommon* spriteCommon = nullptr;
+	// テクスチャマネージャーの初期化
+	TextureManager::GetInstance()->Initialize(dxCommon);
 
-	spriteCommon = new SpriteCommon();
+	// Textureの読んで転送する
+	TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
+
+	// 2枚目のTextureの読んで転送する
+	TextureManager::GetInstance()->LoadTexture("resources/monsterBall.png");
+
+	// スプライトの初期化
+	SpriteCommon* spriteCommon = new SpriteCommon();
 	spriteCommon->Initialize(dxCommon);
 
-	Sprite* sprite = sprite = new Sprite();
-	sprite->Initialize(spriteCommon);
+	std::vector<std::string> textures = {
+	"resources/uvChecker.png",
+	"resources/monsterBall.png"
+	};
+
+	// スプライトの複数表示	
+	std::vector<Sprite*> sprites;
+	for (int32_t i = 0; i < 5; ++i) {
+		Sprite* sprite = nullptr;
+		sprite = new Sprite();
+		sprite->Initialize(spriteCommon,
+			textures[i % textures.size()]);
+		sprite->SetPosition({ i * 128.0f, 100.0f });
+		sprites.push_back(sprite);
+	}
 
 	/*
 	D3D12_STATIC_SAMPLER_DESC staticSamlers[1] = {};
@@ -500,6 +522,7 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 		{0.0f,0.0f,0.0f},
 	};
 
+
 	// 平行光源用のデータ
 	DirectionalLight* directionalLightData = nullptr;
 
@@ -625,7 +648,6 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 
 	// transformの初期化
 	TransForm transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
-	TransForm transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	TransForm cameraTransform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,-5.0f} };
 
 	// DescriptorSizeを取得しておく
@@ -633,56 +655,9 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 	const uint32_t descriptorSizeRTV = dxCommon->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	const uint32_t descriptorSizeDSV = dxCommon->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
-	// Textureの読んで転送する
-	DirectX::ScratchImage mipImage = dxCommon->LoadTexture("resources/uvChecker.png");
-	const DirectX::TexMetadata& metadata = mipImage.GetMetadata();
-	Microsoft::WRL::ComPtr <ID3D12Resource> textureResource = dxCommon->CreateTextuerResource(metadata);
-	Microsoft::WRL::ComPtr <ID3D12Resource> intermediateResource = dxCommon->UploadTextureData(textureResource, mipImage);
-
-	// 2枚目のTextureの読んで転送する
-	DirectX::ScratchImage mipImage2 = dxCommon->LoadTexture("resources/monsterBall.png");
-	const DirectX::TexMetadata& metadata2 = mipImage2.GetMetadata();
-	Microsoft::WRL::ComPtr <ID3D12Resource> textureResource2 = dxCommon->CreateTextuerResource(metadata2);
-	Microsoft::WRL::ComPtr <ID3D12Resource> intermediateResource2 = dxCommon->UploadTextureData(textureResource2, mipImage2);
-
-	// metadataを元にSRVの設定
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-	srvDesc.Format = metadata.format;
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
-
-	// metadataを元にSRVの設定
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc2{};
-	srvDesc2.Format = metadata2.format;
-	srvDesc2.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc2.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc2.Texture2D.MipLevels = UINT(metadata2.mipLevels);
-
-	// ImGuiを除いた 1番目のテクスチャ
-	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU =
-		dxCommon->GetSRVCPUDescriptorHandle(1);
-
-	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU =
-		dxCommon->GetSRVGPUDescriptorHandle(1);
-
-	// ImGuiを除いた 2番目のテクスチャ
-	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU2 =
-		dxCommon->GetSRVCPUDescriptorHandle(2);
-
-	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU2 =
-		dxCommon->GetSRVGPUDescriptorHandle(2);
-
-	// SRVを作成する
-	dxCommon->GetDevice()->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
-	dxCommon->GetDevice()->CreateShaderResourceView(textureResource2.Get(), &srvDesc2, textureSrvHandleCPU2);
-
 	// DepthStencilTexture
 	Microsoft::WRL::ComPtr <ID3D12Resource> depthStencilResource = CreateDepthStencilTexturResource(
 		dxCommon->GetDevice(), WinApp::kClientWidth, WinApp::kClientHeight);
-
-	// Textuer切り替え変数
-	bool useMonsterBall = false;
 
 	transform.rotate.y = 3.0f;
 
@@ -706,6 +681,7 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 		// ゲーム処理
 		//===========================
 
+		/*
 		// ImGuiの処理
 		// ImGuiのウィンドウを作成
 		ImGui::Begin("Plane.obj");
@@ -729,23 +705,32 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 		ImGui::Checkbox("useMonsterBall", &useMonsterBall);
 		// ImGuiのウィンドウを閉じる
 		ImGui::End();
+		*/
 
 		// ImGuiのSpriteウィンドウを作成
 		ImGui::Begin("Sprite");
-		// ImGuiでSpriteの位置を変える
-		ImGui::DragFloat3("TranslateSprite", reinterpret_cast<float*>(&transformSprite.translate.x), 1.0f);
-		// ImGuiでSpriteの回転を変える
-		ImGui::DragFloat3("RotateSprite", reinterpret_cast<float*>(&transformSprite.rotate.x), 0.01f);
-		// ImGuiでSpriteのスケールを変える
-		ImGui::DragFloat3("ScaleSprite", reinterpret_cast<float*>(&transformSprite.scale.x), 0.01f);
-		// ImGuiでUVTransformの位置を変える
-		ImGui::DragFloat2("TranslateUV", reinterpret_cast<float*>(&uvTransformSprite.translate.x), 0.01f, -10.0f, 10.0f);
-		// ImGuiでUVTransformの回転を変える
-		ImGui::SliderAngle("RotateUV", reinterpret_cast<float*>(&uvTransformSprite.rotate.z));
-		// ImGuiでUVTransformのスケールを変える
-		ImGui::DragFloat2("ScaleUV", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
+
+		int index = 0;
+		for (Sprite* sprite : sprites) {
+
+			Vector2 pos = sprite->GetPosition(); // ← 自分自身！
+
+			std::string label = "Position##" + std::to_string(index);
+			ImGui::DragFloat2(label.c_str(), reinterpret_cast<float*>(&pos.x), 0.1f);
+
+			sprite->SetPosition(pos);
+			index++;
+		}
+
 		// ImGuiのウィンドウを閉じる
 		ImGui::End();
+
+		// spriteの更新
+		for (Sprite* sprite : sprites) {
+			sprite->Update();
+		}
+
+		// 変更を反映させる
 
 		/*
 		// レンダリングパイプライン
@@ -764,12 +749,6 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 		uvTransformMatrix = Multiply(MakeTransMatrix(uvTransformSprite.translate), uvTransformMatrix);
 		//materialDataSprite->uvTranseform = uvTransformMatrix;
 */
-
-		Vector2 pos = sprite->GetPosition();
-		pos += Vector2{ 1.0f, 0.0f };
-		sprite->SetPosition(pos);
-
-		sprite->Update();
 
 		ImGui::Render();
 		// ↑ ゲーム処理はここまで
@@ -801,7 +780,7 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 		//dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 
 		// SRVのDescriptorTableの設定
-		dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
+		//dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
 
 		// 球体用のIBVを設定
 		//dxCommon->GetCommandList()->IASetIndexBuffer(&indexBufferView);
@@ -820,9 +799,11 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 		//dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 
 		// Spriteの表示する画像を設定
-		dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+		//dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 
-		sprite->Draw();
+		for (Sprite* sprite : sprites) {
+			sprite->Draw();
+		}
 
 		// Spriteの描画
 		//dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
@@ -845,9 +826,14 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 	// WindowsAPIの終了処理
 	winApp->Finalize();
 
+	// テクスチャマネージャーの終了処理
+	TextureManager::GetInstance()->Finalize();
+
 	delete input;
 	delete winApp;
-	delete sprite;
+	for (auto sprite : sprites) {
+		delete sprite;
+	}
 	delete spriteCommon;
 	delete dxCommon;
 	return 0;

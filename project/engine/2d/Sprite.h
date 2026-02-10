@@ -2,13 +2,14 @@
 #include <wrl.h>
 #include <d3d12.h>
 #include "mymath.h"
+#include <string>  
 
 class  SpriteCommon;
 
 class Sprite {
 public:
 
-	void Initialize(SpriteCommon* spriteCommon);
+	void Initialize(SpriteCommon* spriteCommon, std::string textureFilePath);
 
 	void Update();
 
@@ -17,6 +18,18 @@ public:
 	const Math::Vector2& GetPosition() { return position; }
 
 	void SetPosition(const Math::Vector2& pos) { this->position = pos; }
+
+	float GetRotation() { return rotation; }
+	void SetRotation(float rot) { this->rotation = rot; }
+
+	// 色変更
+	const Math::Vector4& GetColor() { return materialData->color; }
+	void SetColor(const Math::Vector4& color) { this->materialData->color = color; }
+
+	// サイズ変更
+	const Math::Vector2& GetSize()const { return size; }
+	void SetSize(const Math::Vector2& size) { this->size = size; }
+
 private:
 	SpriteCommon* spriteCommon_ = nullptr;
 
@@ -70,4 +83,11 @@ private:
 	Math::TransForm transform;
 
 	Math::Vector2 position = { 0.0f,0.0f };
+
+	float rotation = 0.0f;
+
+	Math::Vector2 size = { 640.0f,360.0f };
+
+	// テクスチャ番号
+	uint32_t textureIndex = 0;
 };
