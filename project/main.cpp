@@ -522,6 +522,7 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 		{0.0f,0.0f,0.0f},
 	};
 
+
 	// 平行光源用のデータ
 	DirectionalLight* directionalLightData = nullptr;
 
