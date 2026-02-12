@@ -56,6 +56,9 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 
 	// テクスチャの読み込みとテクスチャインデックスの取得
 	textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
+
+	// テクスチャサイズを取得してスプライトサイズに反映
+	AbjustSizeToTexture();
 }
 
 void Sprite::Update() {
@@ -63,21 +66,50 @@ void Sprite::Update() {
 	// 頂点リソースにデータを書き込む(4点分)
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 
+	// アンカーポイントを考慮した頂点座標の計算
+	float left = 0.0f - anchorPoint.x;
+	float right = 1.0f - anchorPoint.x;
+	float top = 0.0f - anchorPoint.y;
+	float bottom = 1.0f - anchorPoint.y;
+
+	// 左右反転
+	if (isFlipX) {
+		left = -left;
+		right = -right;
+	}
+
+	// 上下反転
+	if (isFlipY) {
+		top = -top;
+		bottom = -bottom;
+	}
+
+	// メタデータを取得
+	const DirectX::TexMetadata& metadata =
+		TextureManager::GetInstance()->GetTextureMetadata(textureIndex);
+
+	// テクスチャの幅と高さ
+	float tex_left = textureLeftTop.x / metadata.width;
+	float tex_top = textureLeftTop.y / metadata.height;
+	float tex_right = (textureLeftTop.x + textureSize.x) / metadata.width;
+	float tex_bottom = (textureLeftTop.y + textureSize.y) / metadata.height;
+
+	/// 頂点データの設定
 	// 左下
-	vertexData[0].position = { 0.0f,1.0f,0.0f,1.0f };
-	vertexData[0].texcoord = { 0.0f,1.0f };
+	vertexData[0].position = { left,bottom,0.0f,1.0f };
+	vertexData[0].texcoord = { tex_left,tex_bottom };
 
 	// 上
-	vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f };
-	vertexData[1].texcoord = { 0.0f,0.0f };
+	vertexData[1].position = { left,top,0.0f,1.0f };
+	vertexData[1].texcoord = { tex_left,tex_top };
 
 	// 右下
-	vertexData[2].position = { 1.0f,1.0f,0.0f,1.0f };
-	vertexData[2].texcoord = { 1.0f,1.0f };
+	vertexData[2].position = { right,bottom,0.0f,1.0f };
+	vertexData[2].texcoord = { tex_right,tex_bottom };
 
 	// 右上
-	vertexData[3].position = { 1.0f,0.0f,0.0f,1.0f };
-	vertexData[3].texcoord = { 1.0f,0.0f };
+	vertexData[3].position = { right,top,0.0f,1.0f };
+	vertexData[3].texcoord = { tex_right,tex_top };
 
 	// 法線
 	vertexData[0].nomal = { 0.0f,0.0f,1.0f };
@@ -134,4 +166,17 @@ void Sprite::Draw() {
 
 	// 描画コマンド
 	spriteCommon_->GetDirectXCommon()->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
+}
+
+void Sprite::AbjustSizeToTexture() {
+	// メタデータを取得
+	const DirectX::TexMetadata& metadata =
+		TextureManager::GetInstance()->GetTextureMetadata(textureIndex);
+	
+	// テクスチャの幅と高さをサイズにセット
+	textureSize.x = static_cast<float>(metadata.width);
+	textureSize.y = static_cast<float>(metadata.height);
+
+	// 画像サイズをテクスチャサイズに合わせる
+	size = textureSize;
 }
