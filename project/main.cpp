@@ -382,6 +382,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		sprites.push_back(sprite);
 	}
 
+	// でかい画像を一枚
+	Sprite* bigSprite = nullptr;
+	bigSprite = new Sprite();
+	bigSprite->Initialize(spriteCommon,
+		"resources/uvChecker.png");
+	bigSprite->SetPosition({ 400.0f,300.0f });
+	bigSprite->SetSize({ 512.0f,512.0f });
+
 	/*
 	D3D12_STATIC_SAMPLER_DESC staticSamlers[1] = {};
 	staticSamlers[0].Filter = D3D12_FILTER_MIN_MAG_POINT_MIP_LINEAR;
@@ -715,20 +723,61 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 
 			Vector2 pos = sprite->GetPosition(); // ← 自分自身！
 
+			// ImGuiでスプライトの位置を変える
 			std::string label = "Position##" + std::to_string(index);
 			ImGui::DragFloat2(label.c_str(), reinterpret_cast<float*>(&pos.x), 0.1f);
 
+			// imguiで回転させる
+			float rotate = sprite->GetRotation();
+			ImGui::DragFloat(("Rotate##" + std::to_string(index)).c_str(),
+				reinterpret_cast<float*>(&rotate), 0.1f);
+
 			sprite->SetPosition(pos);
+			sprite->SetRotation(rotate);
 			index++;
 		}
 
+
+
 		// ImGuiのウィンドウを閉じる
+		ImGui::End();
+
+		ImGui::Begin("BigSprite");
+		Vector2 bigPos = bigSprite->GetPosition();
+		// ImGuiででかいスプライトの位置を変える
+		ImGui::DragFloat2("BigSpritePosition", reinterpret_cast<float*>(&bigPos.x), 1.0f);
+		bigSprite->SetPosition(bigPos);
+		// ImGuiででかいスプライトの回転を変える
+		float bigRotate = bigSprite->GetRotation();
+		ImGui::DragFloat("BigSpriteRotate", reinterpret_cast<float*>(&bigRotate), 0.01f);
+		bigSprite->SetRotation(bigRotate);
+		// でかいスプライトのアンカーを変える
+		bigPos = bigSprite->GetAnchorPoint();
+		ImGui::DragFloat2("BigSpriteAnchor", reinterpret_cast<float*>(&bigPos.x), 0.01f, 0.0f, 1.0f);
+		bigSprite->SetAnchorPoint(bigPos);
+
+		// でかいスプライトのフリップを変える
+		bool flipX = bigSprite->GetFlipX();
+		bool flipY = bigSprite->GetFlipY();
+		ImGui::Checkbox("BigSpriteFlipX", &flipX);
+		ImGui::Checkbox("BigSpriteFlipY", &flipY);
+		bigSprite->SetFlipX(flipX);
+		bigSprite->SetFlipY(flipY);
+
+		// ImGuiで切り出しサイズを変える
+		Vector2 bigSize = bigSprite->GetTextureSize();
+		ImGui::DragFloat2("BigSpriteTextureSize", reinterpret_cast<float*>(&bigSize.x),0.1f);
+		bigSprite->SetTextureSize(bigSize);
+
 		ImGui::End();
 
 		// spriteの更新
 		for (Sprite* sprite : sprites) {
 			sprite->Update();
 		}
+
+		// でかいスプライトの更新
+		bigSprite->Update();
 
 		// 変更を反映させる
 
@@ -805,6 +854,9 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 			sprite->Draw();
 		}
 
+		// でかいスプライトの描画
+		bigSprite->Draw();
+
 		// Spriteの描画
 		//dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
 
@@ -834,6 +886,7 @@ materialDataSprite->uvTranseform = makeIdentity4x4();
 	for (auto sprite : sprites) {
 		delete sprite;
 	}
+	delete bigSprite;
 	delete spriteCommon;
 	delete dxCommon;
 	return 0;

@@ -128,6 +128,15 @@ D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetSRVHandleGPU(uint32_t textureInde
 	return textureDatas[dataIndex].srvHandleGPU;
 }
 
+const DirectX::TexMetadata& TextureManager::GetTextureMetadata(uint32_t textureIndex) {
+	// SRV index は ImGui 領域より後である必要がある
+	assert(textureIndex >= kSRVtIndexTop);
+	uint32_t dataIndex = textureIndex - kSRVtIndexTop;
+	// 実際のテクスチャ数を超えていないか
+	assert(dataIndex < textureDatas.size());
+	return textureDatas[dataIndex].metadata;
+}
+
 void TextureManager::Finalize() {
 	delete instance;
 	instance = nullptr;

@@ -30,6 +30,32 @@ public:
 	const Math::Vector2& GetSize()const { return size; }
 	void SetSize(const Math::Vector2& size) { this->size = size; }
 
+	// アンカーのゲッター
+	const Math::Vector2& GetAnchorPoint() const { return anchorPoint; }
+	// アンカーのセッター
+	void SetAnchorPoint(const Math::Vector2& anchor) { anchorPoint = anchor; }
+
+	// 左右フリップのゲッター
+	bool GetFlipX() const { return isFlipX; }
+
+	// 左右フリップのセッター
+	void SetFlipX(bool flip) { isFlipX = flip; }
+
+	// 上下フリップのゲッター
+	bool GetFlipY() const { return isFlipY; }
+
+	// 上下フリップのセッター
+	void SetFlipY(bool flip) { isFlipY = flip; }
+
+	// テクスチャ切り出し左上座標のセッター
+	void SetTextureLeftTop(const Math::Vector2& leftTop) { textureLeftTop = leftTop; }
+	// テクスチャ切り出しサイズのセッター
+	void SetTextureSize(const Math::Vector2& size) { textureSize = size; }
+	// テクスチャ切り出し左上座標のゲッター
+	const Math::Vector2& GetTextureLeftTop() const { return textureLeftTop; }
+	// テクスチャ切り出しサイズのゲッター
+	const Math::Vector2& GetTextureSize() const { return textureSize; }
+
 private:
 	SpriteCommon* spriteCommon_ = nullptr;
 
@@ -90,4 +116,19 @@ private:
 
 	// テクスチャ番号
 	uint32_t textureIndex = 0;
+
+	// アンカーポイント(0.0~1.0)
+	Math::Vector2 anchorPoint = { 0.0f,0.0f };
+
+	// 左右フリップ
+	bool isFlipX = false;
+	bool isFlipY = false;
+
+	// テクスチャ左上座標
+	Math::Vector2 textureLeftTop = { 0.0f,0.0f };
+	// テクスチャ切り出しサイズ
+	Math::Vector2 textureSize = { 100.0f,100.0f };
+
+	// テクスチャサイズをイメージに合わせる
+	void AbjustSizeToTexture();
 };
